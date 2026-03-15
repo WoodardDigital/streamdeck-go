@@ -46,10 +46,41 @@ prompt_yn() {
 }
 
 prompt_input() {
+  # echo-ne goes to /dev/tty so it isn't captured when called inside $()
   local msg="$1" default="$2"
-  echo -ne "  ${ARROW} ${msg} ${DIM}[${default}]${NC}: "
+  echo -ne "  ${ARROW} ${msg} ${DIM}[${default}]${NC}: " >/dev/tty
   read -r _input </dev/tty
   echo "${_input:-$default}"
+}
+
+pick_directory() {
+  local default="$1"
+  local result=""
+
+  if command -v fzf &>/dev/null; then
+    echo -e "\n  ${DIM}arrow keys to navigate · enter to select · ctrl-c to type path manually${NC}\n" >/dev/tty
+    result=$(
+      find "$HOME" -maxdepth 4 -type d 2>/dev/null | sort |
+      fzf --height=50% \
+          --reverse \
+          --border=rounded \
+          --prompt="  ❯ " \
+          --header=" Select dotfiles directory" \
+          --preview="ls -1 {} 2>/dev/null | head -30" \
+          --preview-window="right:35%:border-left" \
+          --query="dotfiles" \
+          --bind="ctrl-c:abort"
+    ) || result=""
+  fi
+
+  # fzf not available or ctrl-c pressed — fall back to plain text input
+  if [[ -z "$result" ]]; then
+    echo -ne "  ${ARROW} Path to dotfiles repo ${DIM}[${default}]${NC}: " >/dev/tty
+    read -r result </dev/tty
+    result="${result:-$default}"
+  fi
+
+  echo "$result"
 }
 
 abspath() {
@@ -193,7 +224,7 @@ CONFIG_DIR=""
 
 if prompt_yn "Use a dotfiles directory?" "y"; then
   nl
-  DOTFILES_RAW="$(prompt_input "Path to dotfiles repo" "${DEFAULT_DOTFILES}")"
+  DOTFILES_RAW="$(pick_directory "${DEFAULT_DOTFILES}")"
   DOTFILES="$(abspath "${DOTFILES_RAW}")"
 
   if [[ ! -d "${DOTFILES}" ]]; then
@@ -241,6 +272,24 @@ if [[ ! -f "${CONFIG_DIR}/config.yaml" ]]; then
   ok "Default config written to config.yaml"
 else
   ok "config.yaml already exists — not overwritten"
+fi
+
+# Copy bundled icons (never overwrite existing ones the user may have customised).
+if [[ -d "icons" ]]; then
+  copied=0
+  for f in icons/*; do
+    [[ -f "$f" ]] || continue
+    dest="${CONFIG_DIR}/icons/$(basename "$f")"
+    if [[ ! -f "$dest" ]]; then
+      cp "$f" "$dest"
+      (( copied++ )) || true
+    fi
+  done
+  if (( copied > 0 )); then
+    ok "Copied ${copied} bundled icon(s) to ${CONFIG_DIR}/icons/"
+  else
+    ok "Bundled icons already present — not overwritten"
+  fi
 fi
 
 # ── 7. Symlink (dotfiles mode only) ───────────────────────────────────────────

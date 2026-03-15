@@ -7,6 +7,7 @@ import (
 	"image"
 	"image/jpeg"
 	_ "image/png"
+	"strings"
 	"sync"
 
 	"github.com/sstallion/go-hid"
@@ -152,6 +153,12 @@ func (sd *StreamDeck) ReadButtons() ([]bool, error) {
 	data := make([]byte, readReportSize)
 	n, err := sd.dev.ReadWithTimeout(data, 250)
 	if err != nil {
+		// hidraw on Linux returns errors rather than (0, nil) for non-fatal
+		// conditions: timeout waiting for data, or EINTR (signal interrupted).
+		msg := strings.ToLower(err.Error())
+		if strings.Contains(msg, "timeout") || strings.Contains(msg, "interrupted") {
+			return nil, nil
+		}
 		return nil, err
 	}
 	if n == 0 {
