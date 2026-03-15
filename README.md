@@ -98,8 +98,8 @@ interleave partial image data across keys.
 
 ### Option A — `make install` (recommended)
 
-Builds the binary, installs the systemd user service, and writes a default config
-if one doesn't already exist.
+An interactive installer that handles everything, including optional dotfiles
+directory integration.
 
 ```bash
 # Prerequisites
@@ -110,21 +110,54 @@ cd streamdeck-go
 make install
 ```
 
-`make install` does the following automatically:
+The installer walks you through the whole setup:
 
-1. Installs the udev rule (`/etc/udev/rules.d/99-streamdeck.rules`) so the device is accessible without root
-2. Builds the binary and copies it to `~/.local/bin/streamdeck-go`
-3. Creates `~/.config/streamdeck-go/` and `~/.config/streamdeck-go/icons/`
-4. Writes a starter `~/.config/streamdeck-go/config.yaml` (only if one doesn't exist)
-5. Installs and enables the systemd user service — starts now and on every login
+```
+  ❯ Building streamdeck-go...
+  ✓ Build complete
 
-After install, edit your config:
+  ❯ Checking udev rule...
+  ✓ udev rule already installed — skipping
+
+  Config location
+  ─────────────────────────────────────────────
+
+  · streamdeck-go stores its config and icons in a single directory.
+  · You can keep that directory inside your dotfiles repo and symlink it
+  · into ~/.config — the same pattern used by Hyprland, Waybar, etc.
+
+  ❯ Use a dotfiles directory? [Y/n]
+  ❯ Path to dotfiles repo [~/dotfiles]:
+
+  · Will create:
+  ·   ~/dotfiles/.config/streamdeck-go/
+  ·   ~/dotfiles/.config/streamdeck-go/config.yaml
+  ·   ~/dotfiles/.config/streamdeck-go/icons/
+
+  · Will symlink:
+  ·   ~/.config/streamdeck-go
+  ·   └─▶ ~/dotfiles/.config/streamdeck-go
+
+  ❯ Confirm? [Y/n]
+```
+
+The resulting structure inside your dotfiles repo mirrors everything else in `.config`:
+
+```
+~/dotfiles/
+└── .config/
+    ├── hypr/
+    ├── waybar/
+    └── streamdeck-go/       ← lives here, symlinked to ~/.config/streamdeck-go
+        ├── config.yaml
+        └── icons/
+```
+
+After install, edit and save `config.yaml` — the deck reloads live, no restart needed:
 
 ```bash
 $EDITOR ~/.config/streamdeck-go/config.yaml
 ```
-
-Changes are picked up automatically — no need to restart anything.
 
 To remove:
 
