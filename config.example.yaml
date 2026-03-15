@@ -1,0 +1,30 @@
+icons_dir: ./icons
+brightness: 70
+
+# Device USB IDs — defaults match Stream Deck XL v2.
+# Run `lsusb | grep Elgato` to confirm yours.
+device:
+  vendor_id: 0x0fd9
+  product_id: 0x00ba
+
+# Keys are 0-indexed, left-to-right, top-to-bottom.
+# Stream Deck XL layout (8 columns × 4 rows):
+#
+#  0  1  2  3  4  5  6  7
+#  8  9 10 11 12 13 14 15
+# 16 17 18 19 20 21 22 23
+# 24 25 26 27 28 29 30 31
+#
+# icon: filename inside icons_dir (PNG or JPEG)
+# command: any shell command
+
+keys:
+  0:
+    icon: ghostty.png
+    command: ghostty
+  1:
+    icon: terminal.png
+    command: alacritty
+  2:
+    icon: files.png
+    command: nautilus

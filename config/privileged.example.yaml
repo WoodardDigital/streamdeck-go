@@ -1,0 +1,24 @@
+# /etc/streamdeck-go/privileged.yaml
+#
+# Root-owned whitelist of commands that streamdeck-go is allowed to run with
+# elevated privileges via the helper daemon.
+#
+# IMPORTANT:
+#   - This file must be owned by root and not world-writable.
+#   - Only root can add or modify entries.
+#   - The helper will refuse to start if this file is world-writable.
+#
+# Usage in ~/.config/streamdeck-go/config.yaml:
+#   keys:
+#     5:
+#       icon: suspend.png
+#       command: "priv:suspend"
+#
+# The value is a shell command run as root. Keep these minimal and specific.
+
+commands:
+  suspend:  "systemctl suspend"
+  reboot:   "systemctl reboot"
+  poweroff: "systemctl poweroff"
+  # brightness_max: "brightnessctl set 100%"
+  # wake_on_lan:    "etherwake AA:BB:CC:DD:EE:FF"

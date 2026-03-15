@@ -1,0 +1,31 @@
+# Compiled binaries
+streamdeck
+/bin/
+*.exe
+
+# Build output
+dist/
+
+# Go tool cache
+vendor/
+
+# Test artifacts
+*.test
+*.out
+coverage.html
+
+# Icons — keep the folder but not personal icon files
+icons/*
+!icons/.gitkeep
+
+# Personal config (dotfile-style — user maintains their own)
+config.yaml
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+.claude

@@ -1,0 +1,16 @@
+[Unit]
+Description=Stream Deck controller
+Documentation=https://github.com/WoodardDigital/streamdeck-go
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/streamdeck-go
+Restart=on-failure
+RestartSec=3
+# Config is auto-discovered at ~/.config/streamdeck-go/config.yaml
+# Override with: ExecStart=%h/.local/bin/streamdeck-go -config /path/to/config.yaml
+
+[Install]
+WantedBy=graphical-session.target
