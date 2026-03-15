@@ -231,7 +231,7 @@ if prompt_yn "Use a dotfiles directory?" "y"; then
     warn "Directory ${DOTFILES} does not exist — it will be created."
   fi
 
-  CONFIG_DIR="${DOTFILES}/.config/streamdeck-go"
+  CONFIG_DIR="${DOTFILES}/streamdeck-go/.config/streamdeck-go"
   SYMLINK_TARGET="${XDG_CONFIG}/streamdeck-go"
 
   nl
