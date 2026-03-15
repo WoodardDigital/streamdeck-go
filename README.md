@@ -15,6 +15,7 @@ No Elgato software required — communicates directly with the device over USB H
 - PNG and JPEG icons, automatically scaled to key size
 - Animated GIF support — frames pre-encoded at startup, cycled at the GIF's native rate
 - Runs any shell command on key press
+- **Status/toggle keys** — poll any shell command on an interval, swap icons based on output; icon updates on press
 - **Live config reload** — save your config and the deck updates instantly, no restart needed
 - Privileged command helper — run whitelisted root commands via a Unix socket; supports polkit auth dialogs
 - Automatic reconnect — survives USB unplug, KVM switches, and suspend/resume
@@ -59,6 +60,10 @@ streamdeck-go/
               ├── animated GIF ──▶ device.EncodeFrame()  (pre-encode all frames once)
               │                        └──▶ goroutine/key: loop frames, sleep per-frame delay
               │                             (cancelled via ctx on reload)
+              │
+              ├── poll goroutine/key ──▶ exec poll command every interval
+              │                            └──▶ match in stdout? swap icon_true / icon_false
+              │                                 (also triggered immediately on button press)
               │
               └── event loop ──▶ device.ReadButtons()    (250 ms timeout, checks ctx)
                                       └──▶ key-down: exec.Command("sh", "-c", command)
@@ -272,6 +277,63 @@ keys:
     command: ""
 ```
 
+### Status / toggle keys
+
+A key can poll any shell command on an interval and show one of two icons based on the result. Pressing the button runs `command` as usual, and the icon re-checks ~400 ms later so it reflects the new state immediately.
+
+```yaml
+keys:
+  3:
+    command: pactl set-source-mute @DEFAULT_SOURCE@ toggle
+    icon_true:  mic-muted.png   # shown when poll output contains match
+    icon_false: mic-active.png  # shown when poll output does not contain match
+    poll:
+      command:  pactl get-source-mute @DEFAULT_SOURCE@
+      interval: 2s              # how often to check (default: 2s)
+      match: "yes"              # substring to find in stdout → true
+```
+
+**How matching works:**
+
+| `match` set? | True condition | False condition |
+|---|---|---|
+| Yes | stdout contains the string | stdout does not contain it |
+| No (omitted) | command exits 0 | command exits non-zero |
+
+**More examples:**
+
+```yaml
+# VPN status (exit-code match — no match string needed)
+4:
+  command: nmcli connection up my-vpn
+  icon_true:  vpn-on.png
+  icon_false: vpn-off.png
+  poll:
+    command: nmcli connection show --active my-vpn
+    interval: 5s
+
+# Systemd service toggle
+5:
+  command: systemctl --user toggle my-service
+  icon_true:  service-running.png
+  icon_false: service-stopped.png
+  poll:
+    command:  systemctl --user is-active my-service
+    interval: 3s
+
+# Speaker mute
+6:
+  command: pactl set-sink-mute @DEFAULT_SINK@ toggle
+  icon_true:  speaker-muted.png
+  icon_false: speaker-on.png
+  poll:
+    command:  pactl get-sink-mute @DEFAULT_SINK@
+    interval: 2s
+    match: "yes"
+```
+
+---
+
 ### Terminal & SSH commands
 
 Any shell command works — including launching terminals and SSH sessions.
@@ -358,6 +420,7 @@ Works as long as SSH key auth is set up and the key has no passphrase (or the ag
 | PNG | Recommended for static icons |
 | JPEG | Good for photos / complex images |
 | GIF | Animated — all frames pre-encoded at startup, cycled in a background goroutine |
+| SVG | Rasterised to 96×96 at startup via `oksvg` |
 
 Icons are scaled to 96×96 px using bi-linear filtering. The XL renders images
 mirrored, so they are pre-flipped before sending — your icons will appear the right

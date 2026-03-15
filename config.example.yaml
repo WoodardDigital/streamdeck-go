@@ -19,6 +19,7 @@ device:
 # command: any shell command
 
 keys:
+  # Regular key: show an icon and run a command on press.
   0:
     icon: ghostty.png
     command: ghostty
@@ -28,3 +29,35 @@ keys:
   2:
     icon: files.png
     command: nautilus
+
+  # Toggle/status key: polls a command to determine state and shows one of two
+  # icons. Pressing the button runs `command` and the icon updates automatically.
+  #
+  # `match` is a substring to find in the poll command's stdout.
+  # If match is found → icon_on is shown; otherwise → icon_off.
+  # Omit `match` entirely to use exit code instead (0 = on, non-zero = off).
+  #
+  # Examples:
+  #   Microphone mute:
+  #     command: pactl set-source-mute @DEFAULT_SOURCE@ toggle
+  #     poll.command: pactl get-source-mute @DEFAULT_SOURCE@
+  #     poll.match: "yes"   # "Mute: yes" → muted → show icon_on (mic-muted.png)
+  #
+  #   VPN toggle:
+  #     command: nmcli connection up my-vpn / nmcli connection down my-vpn
+  #     poll.command: nmcli connection show --active my-vpn
+  #     (no match — uses exit code: 0 = connected)
+  #
+  #   Systemd service:
+  #     command: systemctl --user toggle my-service
+  #     poll.command: systemctl --user is-active my-service
+  #     (no match — uses exit code)
+  #
+  # 3:
+  #   command: pactl set-source-mute @DEFAULT_SOURCE@ toggle
+  #   icon_true: mic-muted.png
+  #   icon_false: mic-active.png
+  #   poll:
+  #     command: pactl get-source-mute @DEFAULT_SOURCE@
+  #     interval: 2s
+  #     match: "yes"
