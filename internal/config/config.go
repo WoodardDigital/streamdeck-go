@@ -49,5 +49,11 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("parse config: %w", err)
 	}
 
+	// Resolve relative icons_dir against the config file's directory so the
+	// binary works regardless of the working directory (e.g. as a systemd service).
+	if !filepath.IsAbs(cfg.IconsDir) {
+		cfg.IconsDir = filepath.Join(filepath.Dir(path), cfg.IconsDir)
+	}
+
 	return cfg, nil
 }

@@ -22,23 +22,10 @@ build-helper:
 
 # ── Install ───────────────────────────────────────────────────────────────────
 
-install: build udev _install-user
-	@echo ""
-	@echo "Done. Edit $(CONFIG_DIR)/config.yaml to configure your keys."
-	@echo "To enable privileged commands (suspend, reboot, etc): make install-helper"
-
-_install-user:
-	install -Dm755 $(BINARY) $(BIN_DIR)/$(BINARY)
-	mkdir -p $(CONFIG_DIR)/icons
-	@if [ ! -f $(CONFIG_DIR)/config.yaml ]; then \
-		install -Dm644 config.example.yaml $(CONFIG_DIR)/config.yaml; \
-		echo "Default config written to $(CONFIG_DIR)/config.yaml"; \
-	else \
-		echo "Config already exists — not overwriting"; \
-	fi
-	install -Dm644 systemd/streamdeck-go.service $(SYSTEMD_USER)/streamdeck-go.service
-	systemctl --user daemon-reload
-	systemctl --user enable --now streamdeck-go.service
+# Interactive install — prompts for dotfiles directory, creates symlink,
+# installs binary + udev rule + systemd user service.
+install:
+	@bash install.sh
 
 # Install the privileged helper (requires sudo).
 # Creates a 'streamdeck' group, adds the current user to it, installs the
