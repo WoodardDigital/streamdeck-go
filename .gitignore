@@ -1,5 +1,7 @@
 # Compiled binaries
 streamdeck
+streamdeck-go
+streamdeck-helper
 /bin/
 *.exe
 
