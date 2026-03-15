@@ -8,10 +8,22 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// PollConfig defines how to poll for the current state of a toggle key.
+type PollConfig struct {
+	Command  string `yaml:"command"`  // shell command whose output is checked
+	Interval string `yaml:"interval"` // how often to poll, e.g. "2s" (default: "2s")
+	Match    string `yaml:"match"`    // substring to find in output → "on" state; omit to use exit code 0
+}
+
 // KeyConfig defines what a single Stream Deck key does.
 type KeyConfig struct {
-	Icon    string `yaml:"icon"`    // filename relative to icons_dir
+	Icon    string `yaml:"icon"`    // filename relative to icons_dir (regular keys)
 	Command string `yaml:"command"` // shell command to run on press
+
+	// Toggle/status keys: show different icons based on polled state.
+	IconTrue  string      `yaml:"icon_true"`  // icon when poll match is true
+	IconFalse string      `yaml:"icon_false"` // icon when poll match is false
+	Poll      *PollConfig `yaml:"poll"`
 }
 
 // Config is the top-level structure of the YAML config file.
